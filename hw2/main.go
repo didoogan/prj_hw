@@ -41,10 +41,12 @@ func main() {
 
 	cage.GetCaptured()
 
-	var freeAnimals []Animal
-	freeAnimals = append(freeAnimals, lion, tiger, tortle, raccoon, python)
+	var freeAnimals []*Animal
+	freeAnimals = append(freeAnimals, &lion, &tiger, &tortle, &raccoon, &python)
+
+	lion.Nickname = "Leonessa"
 	for _, a := range freeAnimals {
-		jhon.CatchAnimal(&cage, &a)
+		jhon.CatchAnimal(&cage, a)
 	}
 
 	cage.GetCaptured()
