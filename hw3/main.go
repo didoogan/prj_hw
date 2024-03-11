@@ -24,6 +24,7 @@ func (u *User) HasUserObject(objectName string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -32,6 +33,8 @@ func (u *User) ChangeHealth(amount HealsAmount) {
 
 	if calculatedHealth < 100 {
 		u.Health = calculatedHealth
+	} else if calculatedHealth > 100 {
+		u.Health = 100
 	}
 }
 
@@ -45,13 +48,13 @@ type Situation struct {
 }
 
 func quest1(u *User) error {
-	fmt.Println("There are three object on the floor: knife (1), flashlight(2) and guidline for helicopters pilots beginers (3). Choose one of those: \n")
+	fmt.Println("There are three object on the floor: knife (1), flashlight(2) and guidline for helicopters pilots beginers (3). Choose one of those [1-3]: \n")
 
 	var objectChose int
 	var object Object
 	fmt.Scanln(&objectChose)
 
-	if objectChose > 3 {
+	if objectChose > 3 || objectChose < 1 {
 		return errors.New("You entered wrong value")
 	}
 
@@ -80,7 +83,7 @@ func runQuestWithRandomGues(u *User, objectName string, challenge string) error 
 		choiceRange = 20
 	}
 
-	randomNumber := rand.Intn(choiceRange + 1)
+	randomNumber := rand.Intn(choiceRange) + 1
 
 	guesNumber := 0
 
@@ -89,8 +92,14 @@ func runQuestWithRandomGues(u *User, objectName string, challenge string) error 
 	for {
 		fmt.Printf("The are a lot of %vs. Choose one from 1 to %v. But remember each atempt will take 10%% of your health:\n", challenge, choiceRange)
 		fmt.Scanln(&guesNumber)
+
+		if guesNumber > choiceRange || guesNumber < 1 {
+			return errors.New("You entered wrong value")
+		}
+
 		if guesNumber == randomNumber {
 			break
+
 		} else if guesNumber > randomNumber {
 			guesNumberStatus = "more"
 		} else {
@@ -113,27 +122,15 @@ func runQuestWithRandomGues(u *User, objectName string, challenge string) error 
 }
 
 func quest2(u *User) error {
-	error := runQuestWithRandomGues(u, "flashlight", "branch")
-	if error != nil {
-		return error
-	}
-	return nil
+	return runQuestWithRandomGues(u, "flashlight", "branch")
 }
 
 func quest3(u *User) error {
-	error := runQuestWithRandomGues(u, "knife", "weak point")
-	if error != nil {
-		return error
-	}
-	return nil
+	return runQuestWithRandomGues(u, "knife", "weak point")
 }
 
 func quest4(u *User) error {
-	error := runQuestWithRandomGues(u, "guide", "tumbler")
-	if error != nil {
-		return error
-	}
-	return nil
+	return runQuestWithRandomGues(u, "guide", "tumbler")
 }
 
 func runSituations(ss []*Situation, u *User) error {
@@ -169,7 +166,7 @@ func main() {
 	situation3Desc := "Ok, your path go through forest, but you met huge bear there. You should kill him!"
 	situation3 := Situation{Description: situation3Desc, Quest: quest3}
 
-	situation4Desc := "Ok, in the mountains you find out helicopter. You could be survived if you handle it!"
+	situation4Desc := "Ok, in mountains you find out helicopter. You could survive if you will handle it!"
 	situation4 := Situation{Description: situation4Desc, Quest: quest4}
 
 	situations := []*Situation{&situation1, &situation2, &situation3, &situation4}
@@ -178,6 +175,6 @@ func main() {
 	if error != nil {
 		fmt.Println(error)
 	} else {
-		fmt.Printf("%v, Congratilation! You win! You have %v %% of helath, don't forget to visit hospital\n", user.Name, user.Health)
+		fmt.Printf("%v, Congratilation! You win! You have %v %% of helath, don't forget to visit a hospital\n", user.Name, user.Health)
 	}
 }
