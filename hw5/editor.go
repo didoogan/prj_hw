@@ -101,7 +101,7 @@ func (e *Editor) GenerateLines(filePath string, linesCount, uniqWordsCount int) 
 	shuffle(e.bufferLines)
 
 	for i := 0; i < linesCount; i++ {
-		lineList = make([]string, lineWordsCopacity)
+		lineList = make([]string, 0, lineWordsCopacity)
 		for y := 0; y < lineWordsCopacity; y++ {
 			randomIndex := rand.Intn(uniqWordsCount)
 			lineList = append(lineList, e.bufferLines[randomIndex])
