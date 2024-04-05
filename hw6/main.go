@@ -14,20 +14,21 @@ func main() {
 	train := transport.Train{}
 	jet := transport.Jet{}
 
-	bus.GetPassenger(&nick)
-	bus.GetPassenger(&helen)
+	bus.TakePassenger(&nick)
+	bus.TakePassenger(&helen)
 
-	train.GetPassenger(&nick)
-	train.GetPassenger(&helen)
+	train.TakePassenger(&nick)
+	train.TakePassenger(&helen)
 
-	jet.GetPassenger(&nick)
-	jet.GetPassenger(&helen)
+	jet.TakePassenger(&nick)
+	jet.TakePassenger(&helen)
 
 	euroToure := route.EuroRoute{}
 
 	euroToure.AddTransport(&bus)
 	euroToure.AddTransport(&train)
 
+	jet.OutPassenger(&nick)
 	jet.OutPassenger(&nick)
 	euroToure.AddTransport(&jet)
 

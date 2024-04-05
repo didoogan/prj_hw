@@ -2,21 +2,19 @@ package route
 
 import (
 	"fmt"
-	"maps/transport"
-	"maps/utils"
 )
 
 type Route interface {
-	AddTransport(t transport.Transport)
+	AddTransport(t Transport)
 	ShowTransports()
-	GetTransports() []transport.Transport
+	GetTransports() []Transport
 	Run()
 }
 
 func basicShowTransport(r Route) {
-	fmt.Printf("During %v you will use the next transport:\n", utils.GetTypeName(r))
+	fmt.Printf("During %T you will use the next transport:\n", r)
 	for _, t := range r.GetTransports() {
-		fmt.Println(utils.GetTypeName(t))
+		fmt.Printf("%T\n", t)
 	}
 }
 

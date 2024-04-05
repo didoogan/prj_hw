@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"maps/route"
 	"maps/user"
 )
 
@@ -8,12 +9,12 @@ type Bus struct {
 	passengers []*user.Passenger
 }
 
-func (b *Bus) GetPassenger(p *user.Passenger) {
-	basicGetPassenger(b, p)
+func (b *Bus) TakePassenger(p *user.Passenger) {
+	route.BasicGetPassenger(b, p)
 }
 
 func (b *Bus) OutPassenger(p *user.Passenger) {
-	basicOutPassenger(b, p)
+	route.BasicOutPassenger(b, p)
 }
 
 func (b *Bus) GetPassengers() []*user.Passenger {
@@ -25,5 +26,5 @@ func (b *Bus) SetPassengers(ps []*user.Passenger) {
 }
 
 func (b *Bus) Run() {
-	basicRunTransport(b)
+	route.BasicRunTransport(b)
 }

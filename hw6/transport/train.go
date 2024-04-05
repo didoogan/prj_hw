@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"maps/route"
 	"maps/user"
 )
 
@@ -8,12 +9,12 @@ type Train struct {
 	passengers []*user.Passenger
 }
 
-func (t *Train) GetPassenger(p *user.Passenger) {
-	basicGetPassenger(t, p)
+func (t *Train) TakePassenger(p *user.Passenger) {
+	route.BasicGetPassenger(t, p)
 }
 
 func (t *Train) OutPassenger(p *user.Passenger) {
-	basicOutPassenger(t, p)
+	route.BasicOutPassenger(t, p)
 }
 
 func (t *Train) GetPassengers() []*user.Passenger {
@@ -25,5 +26,5 @@ func (t *Train) SetPassengers(ps []*user.Passenger) {
 }
 
 func (t *Train) Run() {
-	basicRunTransport(t)
+	route.BasicRunTransport(t)
 }

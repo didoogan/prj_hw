@@ -1,18 +1,14 @@
 package route
 
-import (
-	"maps/transport"
-)
-
 type EuroRoute struct {
-	transports []transport.Transport
+	transports []Transport
 }
 
-func (er *EuroRoute) AddTransport(t transport.Transport) {
+func (er *EuroRoute) AddTransport(t Transport) {
 	er.transports = append(er.transports, t)
 }
 
-func (er *EuroRoute) GetTransports() []transport.Transport {
+func (er *EuroRoute) GetTransports() []Transport {
 	return er.transports
 }
 
