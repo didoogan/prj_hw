@@ -5,37 +5,35 @@ import (
 	"math/rand"
 )
 
-func generateRandomNumbers(ch chan int) {
-	for i := 0; i < 7; i++ {
+const randomNumbersCount = 7
+
+func generateRandomNumbers(randomNumbersCh chan int) {
+	for i := 0; i < randomNumbersCount; i++ {
 		randomNumber := rand.Intn(10) + 1
 		fmt.Printf("Random number %v is generated\n", randomNumber)
-		ch <- randomNumber
+		randomNumbersCh <- randomNumber
 	}
 
-	close(ch)
+	close(randomNumbersCh)
 }
 
-func findAverageNumber(readCh <-chan int, writeCh chan float64) {
+func findAverageNumber(randomNumbersCh <-chan int, averageNumberCh chan float64) {
 	var sum int
 	var counter int
 
-	for i := range readCh {
+	for i := range randomNumbersCh {
 		sum += i
 		counter++
 	}
 
-	var averageNumber float64
-	if counter > 0 {
-		averageNumber = float64(sum) / float64(counter)
-	}
+	averageNumber := float64(sum) / float64(counter)
+	averageNumberCh <- averageNumber
 
-	writeCh <- averageNumber
-
-	close(writeCh)
+	close(averageNumberCh)
 }
 
-func printAverageNumber(ch chan float64, done chan struct{}) {
-	for i := range ch {
+func printAverageNumber(averageNumberCh <-chan float64, done chan struct{}) {
+	for i := range averageNumberCh {
 		fmt.Printf("\nThe average number is %v\n", i)
 	}
 
