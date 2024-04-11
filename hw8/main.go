@@ -32,15 +32,15 @@ type User struct {
 }
 
 type UserAnswer struct {
-	task           Task
-	user           User
+	task           *Task
+	user           *User
 	answer         int
 	answerDuration int
 }
 
 type Round struct {
 	task        Task
-	userAnswers map[User]int
+	userAnswers map[*User]int
 	mx          sync.Mutex
 }
 
@@ -54,49 +54,43 @@ func (r *Round) askQuestion(g *Game) {
 		cancelFunc()
 	default:
 		r.task.printQuestion()
-		g.questionCh <- r.task
+		g.questionCh <- &r.task
 		time.Sleep(time.Second * roundDuration)
 	}
-}
-
-func (r *Round) userAnswerQuestion(u User, t Task, g *Game) {
-	answerDuration := rand.Intn(roundDuration)
-	time.Sleep(time.Second * time.Duration(answerDuration))
-
-	randAnswer := rand.Intn(len(r.task.answers))
-
-	r.mx.Lock()
-	r.userAnswers[u] = randAnswer
-	r.mx.Unlock()
-
-	userAnswer := UserAnswer{task: t, user: u, answer: randAnswer, answerDuration: answerDuration}
-	g.answerCh <- userAnswer
-
-	fmt.Printf("%v answered %v)%v (%v sec)\n", u.name, randAnswer+1, t.answers[randAnswer], answerDuration)
 }
 
 func (r *Round) usersAnswerQuestion(g *Game) {
 	t, ok := <-g.questionCh
 	if ok {
 		for _, u := range g.users {
+			go func(u *User, t *Task, g *Game) {
+				answerDuration := rand.Intn(roundDuration)
+				time.Sleep(time.Second * time.Duration(answerDuration))
 
-			answerTimeout := rand.Intn(roundDuration)
-			time.Sleep(time.Duration(answerTimeout))
+				randAnswer := rand.Intn(len(r.task.answers))
 
-			go r.userAnswerQuestion(u, t, g)
+				r.mx.Lock()
+				r.userAnswers[u] = randAnswer
+				r.mx.Unlock()
+
+				userAnswer := UserAnswer{task: t, user: u, answer: randAnswer, answerDuration: answerDuration}
+				g.answerCh <- &userAnswer
+
+				fmt.Printf("%v answered %v)%v (%v sec)\n", u.name, randAnswer+1, t.answers[randAnswer], answerDuration)
+			}(u, t, g)
 		}
 	}
 }
 
 type Game struct {
 	name        string
-	users       []User
+	users       []*User
 	rounds      []*Round
-	usersPoints map[User]float64
+	usersPoints map[*User]float64
 	mx          sync.Mutex
 	ctx         context.Context
-	questionCh  chan Task
-	answerCh    chan UserAnswer
+	questionCh  chan *Task
+	answerCh    chan *UserAnswer
 }
 
 func (g *Game) updateResult() {
@@ -125,13 +119,13 @@ func (g *Game) printResult() {
 	fmt.Printf("\nResult of %v\n", g.name)
 
 	var userPointsPairs []struct {
-		user   User
+		user   *User
 		points float64
 	}
 
 	for user, points := range g.usersPoints {
 		userPointsPairs = append(userPointsPairs, struct {
-			user   User
+			user   *User
 			points float64
 		}{user: user, points: points})
 	}
@@ -183,19 +177,19 @@ func main() {
 	}
 
 	userNames := []string{"Jhon", "Linda", "Mike", "Alice", "David", "Emily", "Henry", "Grace", "Oliver", "Sophia", "Daniel", "Isabella", "William", "Ava", "Samuel"}
-	users := make([]User, len(userNames), len(userNames))
+	users := make([]*User, len(userNames), len(userNames))
 
 	for i, u := range userNames {
-		users[i] = User{u}
+		users[i] = &User{u}
 	}
 
 	game := Game{
 		name:        "The worldwide kahoot chempionship",
 		users:       users,
 		rounds:      make([]*Round, len(tasks), len(tasks)),
-		usersPoints: make(map[User]float64),
-		questionCh:  make(chan Task),
-		answerCh:    make(chan UserAnswer),
+		usersPoints: make(map[*User]float64),
+		questionCh:  make(chan *Task),
+		answerCh:    make(chan *UserAnswer),
 		ctx:         ctx,
 	}
 
@@ -205,7 +199,7 @@ func main() {
 	go game.updateResult()
 
 	for i, t := range tasks {
-		round := Round{task: t, userAnswers: make(map[User]int)}
+		round := Round{task: t, userAnswers: make(map[*User]int)}
 		game.rounds[i] = &round
 
 		go round.usersAnswerQuestion(&game)
