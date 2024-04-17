@@ -2,34 +2,31 @@ package main
 
 import (
 	"fmt"
-	"time"
 )
 
 func printRoutine(ch chan int) {
 	for i := range ch {
-		fmt.Println(i)
+		fmt.Println(i + 2)
 	}
+	close(ch)
 }
 
-func writeRoutine(readCh, writeCh chan int) {
-	for i := range readCh {
-		fmt.Println(i)
-		writeCh <- i + 1
+func writeRoutine(ch chan int, notify chan struct{}) {
+	for i := 1; i < 5; i++ {
+		ch <- i
 	}
+	notify <- struct{}{}
+
 }
 
 func main() {
-	intChan := make(chan int)
-	intChan2 := make(chan int)
+	ch := make(chan int)
 
-	intChan <- 5
-	intChan <- 6
-	intChan <- 8
+	notify := make(chan struct{})
 
-	go writeRoutine()
+	go writeRoutine(ch, notify)
 
-	time.Sleep(time.Second)
-	//
-	go printRutine(intChan2)
-	time.Sleep(time.Second)
+	go printRoutine(ch)
+
+	<-notify
 }
