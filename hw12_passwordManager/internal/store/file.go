@@ -11,12 +11,12 @@ import (
 const keyValueDelimiter = ":"
 const defaultFilePath = "db.txt"
 
-type FileStore struct {
-	filePath string
+type File struct {
+	Path string
 }
 
-func (s *FileStore) Save(key, value string) error {
-	f, err := os.OpenFile(s.filePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+func (s *File) Save(key, value string) error {
+	f, err := os.OpenFile(s.Path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 
 	if err != nil {
 		return err
@@ -31,8 +31,8 @@ func (s *FileStore) Save(key, value string) error {
 	return nil
 }
 
-func (s *FileStore) searchForKey(key string) (string, bool, error) {
-	f, err := os.Open(s.filePath)
+func (s *File) searchForKey(key string) (string, bool, error) {
+	f, err := os.Open(s.Path)
 	if err != nil {
 		return "", false, err
 	}
@@ -56,9 +56,9 @@ func (s *FileStore) searchForKey(key string) (string, bool, error) {
 	return "", false, nil
 }
 
-func (s *FileStore) GetAllKeys() ([]string, error) {
+func (s *File) GetAllKeys() ([]string, error) {
 	keys := make([]string, 0)
-	f, err := os.Open(s.filePath)
+	f, err := os.Open(s.Path)
 	if err != nil {
 		return keys, err
 	}
@@ -81,7 +81,7 @@ func (s *FileStore) GetAllKeys() ([]string, error) {
 	return keys, nil
 }
 
-func (s *FileStore) Get(key string) (string, error) {
+func (s *File) Get(key string) (string, error) {
 	value, exists, err := s.searchForKey(key)
 	if err != nil {
 		return "", err
@@ -93,7 +93,7 @@ func (s *FileStore) Get(key string) (string, error) {
 	return value, nil
 }
 
-func (s *FileStore) HasKey(key string) (bool, error) {
+func (s *File) HasKey(key string) (bool, error) {
 	_, found, err := s.searchForKey(key)
 	if err != nil {
 		return false, err
@@ -101,8 +101,8 @@ func (s *FileStore) HasKey(key string) (bool, error) {
 	return found, nil
 }
 
-func NewFileStore() *FileStore {
-	return &FileStore{
-		filePath: defaultFilePath,
+func NewFileStore() *File {
+	return &File{
+		Path: defaultFilePath,
 	}
 }

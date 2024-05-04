@@ -2,18 +2,18 @@ package main
 
 import (
 	"fmt"
-	argumentSrv "hw12/internal/argument-service"
+	"hw12/internal/arguments"
+	"hw12/internal/password"
 	"hw12/internal/store"
-	passwordService "hw12/pkg/password-service"
 )
 
 func main() {
 
-	argSrv := argumentSrv.NewArgumentSrv()
+	argService := arguments.NewService()
 
 	fileStore := store.NewFileStore()
 
-	passwordSrv := passwordService.PasswordSrv{Store: fileStore, ArgumentSrv: argSrv}
+	passwordSrv := password.Service{Store: fileStore, ArgumentService: argService}
 
 	err := passwordSrv.ProcessRequest()
 

@@ -1,9 +1,9 @@
-package passwordService
+package password
 
 import (
 	"errors"
 	"fmt"
-	argumentSrv "hw12/internal/argument-service"
+	"hw12/internal/arguments"
 )
 
 const actionGet = "get"
@@ -19,12 +19,12 @@ type Store interface {
 	GetAllKeys() ([]string, error)
 }
 
-type PasswordSrv struct {
-	Store       Store
-	ArgumentSrv *argumentSrv.ArgumentSrv
+type Service struct {
+	Store           Store
+	ArgumentService *arguments.Service
 }
 
-func (s *PasswordSrv) validatePassword(password *string) bool {
+func (s *Service) validatePassword(password *string) bool {
 	if password == nil {
 		return false
 	}
@@ -37,7 +37,7 @@ func (s *PasswordSrv) validatePassword(password *string) bool {
 	return true
 }
 
-func (s *PasswordSrv) Save(passwordName string) error {
+func (s *Service) Save(passwordName string) error {
 	alreadyExists, err := s.Store.HasKey(passwordName)
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func (s *PasswordSrv) Save(passwordName string) error {
 	return nil
 }
 
-func (s *PasswordSrv) ShowPassword(passwordName string) error {
+func (s *Service) ShowPassword(passwordName string) error {
 	passwordValue, err := s.Store.Get(passwordName)
 
 	if err != nil {
@@ -84,7 +84,7 @@ func (s *PasswordSrv) ShowPassword(passwordName string) error {
 	return nil
 }
 
-func (s *PasswordSrv) ShowPasswordsNames() error {
+func (s *Service) ShowPasswordsNames() error {
 	keys, err := s.Store.GetAllKeys()
 
 	if err != nil {
@@ -100,19 +100,19 @@ func (s *PasswordSrv) ShowPasswordsNames() error {
 	return nil
 }
 
-func (s *PasswordSrv) ProcessRequest() error {
-	argsLen := s.ArgumentSrv.GetArgumentsLen()
+func (s *Service) ProcessRequest() error {
+	argsLen := s.ArgumentService.GetArgumentsLen()
 
 	switch argsLen {
 	case 0:
 		return s.ShowPasswordsNames()
 	case 2:
-		args := s.ArgumentSrv.GetArguments()
+		args := s.ArgumentService.GetArguments()
 		action := args[0]
 		passwordName := args[1]
 
 		if action != actionGet && action != actionAdd {
-			return errors.New("first argument should be 'get' or 'save'")
+			return errors.New("first argument should be 'get' or 'add'")
 		}
 
 		switch action {

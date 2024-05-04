@@ -1,15 +1,15 @@
-package argument_service
+package arguments
 
 import (
 	"errors"
 	"os"
 )
 
-type ArgumentSrv struct {
+type Service struct {
 	args []string
 }
 
-func (s *ArgumentSrv) GetArguments() []string {
+func (s *Service) GetArguments() []string {
 	args := make([]string, 0)
 
 	for _, arg := range s.args {
@@ -19,11 +19,11 @@ func (s *ArgumentSrv) GetArguments() []string {
 	return args
 }
 
-func (s *ArgumentSrv) GetArgumentsLen() int {
+func (s *Service) GetArgumentsLen() int {
 	return len(s.args)
 }
 
-func (s *ArgumentSrv) GetArgument(index int) (string, error) {
+func (s *Service) GetArgument(index int) (string, error) {
 	if index >= s.GetArgumentsLen() {
 		return "", errors.New("index error")
 	}
@@ -31,6 +31,6 @@ func (s *ArgumentSrv) GetArgument(index int) (string, error) {
 	return s.args[index], nil
 }
 
-func NewArgumentSrv() *ArgumentSrv {
-	return &ArgumentSrv{args: os.Args[1:]}
+func NewService() *Service {
+	return &Service{args: os.Args[1:]}
 }
