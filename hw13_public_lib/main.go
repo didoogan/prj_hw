@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/didoogan/searchphonenumber"
 	"regexp"
+
+	"github.com/didoogan/searchphonenumber"
 )
 
 func main() {
@@ -28,7 +29,11 @@ func main() {
 	for _, p := range numbersPatterns {
 		re := regexp.MustCompile(p)
 		e.SearchByPattern(re)
-		e.ShowResult(p)
+		fmt.Printf("Found %v Result(s) for pattern `%v` in the file %v:\n", len(e.Result), p, e.FilePath)
+
+		for _, r := range e.Result {
+			fmt.Println(r)
+		}
 	}
 
 	e.FilePath = "text.txt"
@@ -56,6 +61,10 @@ func main() {
 		}
 
 		e.SearchByPattern(re)
-		e.ShowResult(p)
+		fmt.Printf("Found %v Result(s) for pattern `%v` in the file %v:\n", len(e.Result), p, e.FilePath)
+
+		for _, r := range e.Result {
+			fmt.Println(r)
+		}
 	}
 }
