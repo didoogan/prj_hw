@@ -1,12 +1,15 @@
 package services
 
-import store "hw14/internal/repositories"
-
-type Cache struct {
-	repository store.CacheRepository
+type CacheRepository interface {
+	Get(key string) (value string, exists bool, error error)
+	Set(key, value string, ttl int) error
 }
 
-func NewCacheService(r store.CacheRepository) *Cache {
+type Cache struct {
+	repository CacheRepository
+}
+
+func NewCacheService(r CacheRepository) *Cache {
 	return &Cache{repository: r}
 }
 

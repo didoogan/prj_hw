@@ -9,10 +9,17 @@ import (
 )
 
 func main() {
+	userService := services.NewUserService(store.NewUserMemoryRepository())
+	cacheService := services.NewCacheService(store.NewMemoryCacheRepository())
+	tokenService := services.NewTokenService()
+
 	appService := &services.AppService{
-		User:  services.NewUserService(store.NewUserMemoryRepository()),
-		Token: services.NewTokenService(),
-		Cache: services.NewCacheService(store.NewMemoryCacheRepository()),
+		User:  userService,
+		Token: tokenService,
+		Cache: cacheService,
+		Auth: services.NewAuthService(
+			userService, cacheService, tokenService,
+		),
 	}
 
 	a := api.New(appService)

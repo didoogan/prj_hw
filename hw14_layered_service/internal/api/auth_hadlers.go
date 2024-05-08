@@ -2,13 +2,9 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"hw14/internal/api/dto"
-	"hw14/internal/entities"
 	"net/http"
 )
-
-var defaultTtl = 60
 
 func (a *API) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var loginRequest dto.LoginRequest
@@ -19,38 +15,9 @@ func (a *API) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	passwordOk, err := a.service.User.CheckPassword(&entities.UserWithPassword{
-		Login:    loginRequest.Login,
-		Password: loginRequest.Password,
-	})
-
+	token, err := a.service.Auth.Login(loginRequest.Login, loginRequest.Password)
 	if err != nil {
-		a.makeResponse(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if !passwordOk {
-		a.makeResponse(w, "wrong login or password", http.StatusBadRequest)
-		return
-	}
-
-	token, exists, err := a.service.Cache.Get(loginRequest.Login)
-	if err != nil {
-		a.makeResponse(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if !exists {
-		token, err = a.service.Token.Generate(&entities.User{
-			Login: loginRequest.Login,
-		})
-
-		if err != nil {
-			a.makeResponse(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		err = a.service.Cache.Set(loginRequest.Login, token, defaultTtl)
+		a.makeResponse(w, err.Error(), http.StatusBadRequest)
 	}
 
 	loginResponse := dto.LoginResponse{Token: token}
@@ -58,11 +25,9 @@ func (a *API) LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) TokenInfoHandler(w http.ResponseWriter, r *http.Request) {
-	queryParams := r.URL.Query()
-
-	token := queryParams.Get("token")
+	token := r.Header.Get("Authorization")
 	if token == "" {
-		a.makeResponse(w, "query parameter `token` should be provided", http.StatusBadRequest)
+		a.makeResponse(w, "Authorization header is required", http.StatusBadRequest)
 		return
 	}
 
@@ -72,11 +37,27 @@ func (a *API) TokenInfoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("jwt :", jwt)
-
 	claims, err := a.service.Token.ExtractClaims(jwt)
 	if err != nil {
 		a.makeResponse(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	login := claims.Login
+
+	cacheToken, exists, err := a.service.Cache.Get(login)
+	if err != nil {
+		a.makeResponse(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if !exists {
+		a.makeResponse(w, "token expired", http.StatusBadRequest)
+		return
+	}
+
+	if cacheToken != token {
+		a.makeResponse(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 

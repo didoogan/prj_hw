@@ -1,15 +1,22 @@
 package services
 
 import (
+	"errors"
+	"fmt"
 	"hw14/internal/entities"
-	store "hw14/internal/repositories"
 )
 
-type User struct {
-	repository store.UserRepository
+type UserRepository interface {
+	Save(*entities.UserWithPassword) (*entities.User, error)
+	List() ([]*entities.User, error)
+	Get(string) (*entities.UserWithPassword, error)
 }
 
-func NewUserService(r store.UserRepository) *User {
+type User struct {
+	repository UserRepository
+}
+
+func NewUserService(r UserRepository) *User {
 	return &User{repository: r}
 }
 
@@ -18,22 +25,29 @@ func (u *User) List() ([]*entities.User, error) {
 }
 
 func (u *User) Save(user *entities.UserWithPassword) (*entities.User, error) {
-	err := u.repository.Save(user)
+	login := user.Login
+
+	dbUser, err := u.repository.Get(login)
 	if err != nil {
 		return nil, err
 	}
 
-	return &entities.User{Login: user.Login}, nil
+	if dbUser != nil {
+		return nil, errors.New(fmt.Sprintf("user with login %v already exists", login))
+	}
+
+	savedUser, err := u.repository.Save(user)
+	if err != nil {
+		return nil, err
+	}
+
+	return savedUser, nil
 }
 
-func (u *User) CheckPassword(user *entities.UserWithPassword) (bool, error) {
-	dbUser, err := u.repository.Get(&entities.User{Login: user.Login})
+func (u *User) Get(login string) (*entities.UserWithPassword, error) {
+	userWithPassword, err := u.repository.Get(login)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-
-	if dbUser != nil {
-		return dbUser.Password == user.Password, nil
-	}
-	return false, nil
+	return userWithPassword, nil
 }

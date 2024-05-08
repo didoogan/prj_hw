@@ -16,12 +16,19 @@ func (a *API) UserCreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.service.User.Save(&entities.UserWithPassword{
+	var userId int64
+	user, err := a.service.User.Save(&entities.UserWithPassword{
+		ID:       userId,
 		Login:    createUserRequest.Login,
 		Password: createUserRequest.Password,
 	})
 
-	a.makeResponse(w, "ok", http.StatusCreated)
+	if err != nil {
+		a.makeResponse(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	a.makeResponse(w, user, http.StatusCreated)
 }
 
 func (a *API) UserListHandler(w http.ResponseWriter, r *http.Request) {

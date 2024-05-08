@@ -51,16 +51,22 @@ func (t *Token) VerifyToken(tokenString string) (*jwt.Token, error) {
 	return token, nil
 }
 
-func (t *Token) ExtractClaims(token *jwt.Token) (string, error) {
+func (t *Token) ExtractClaims(token *jwt.Token) (*entities.UserClaims, error) {
+	var userClaim entities.UserClaims
 	claims, ok := token.Claims.(jwt.MapClaims)
+
 	if !ok {
-		return "", errors.New("invalid claims format")
+		return &userClaim, errors.New("invalid claims format")
 	}
 
-	user, ok := claims["user"].(string)
+	userJson, ok := claims["user"].(string)
 	if !ok {
-		return "", errors.New("subject claim not found")
+		return &userClaim, errors.New("subject claim not found")
 	}
 
-	return user, nil
+	if err := json.Unmarshal([]byte(userJson), &userClaim); err != nil {
+		return &userClaim, err
+	}
+
+	return &userClaim, nil
 }
